@@ -1,0 +1,28 @@
+
+### POST Request - Create Account
+POST http://localhost:8080/api/v1/accounts
+Content-Type: application/json
+
+{
+  "initialBalance": 100.0
+}
+
+
+
+### POST Request - Deposit Money
+POST http://localhost:8080/api/v1/accounts/1/deposit
+Content-Type: application/json
+
+{
+  "amount": 50.0
+}
+
+
+
+### POST Request - withdraw Money
+POST http://localhost:8080/api/v1/accounts/1/withdraw
+Content-Type: application/json
+
+{
+  "amount": 50.0
+}
