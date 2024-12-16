@@ -1,1 +1,1 @@
-# CQRS_Bank_Aplication
+# CQRS Bank Aplication
