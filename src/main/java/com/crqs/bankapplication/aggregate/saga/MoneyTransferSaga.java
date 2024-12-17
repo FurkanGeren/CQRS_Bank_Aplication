@@ -1,6 +1,5 @@
 package com.crqs.bankapplication.aggregate.saga;
 
-import com.crqs.bankapplication.aggregate.AccountAggregate;
 import com.crqs.bankapplication.aggregate.commands.DepositMoneyCommand;
 import com.crqs.bankapplication.aggregate.commands.TransferMoneyCommand;
 import com.crqs.bankapplication.aggregate.commands.WithdrawMoneyCommand;
@@ -23,8 +22,6 @@ public class MoneyTransferSaga {
     private final QueryGateway queryGateway;
     private static final Logger logger = LoggerFactory.getLogger(MoneyTransferSaga.class);
 
-
-
     @Autowired
     public MoneyTransferSaga(CommandGateway commandGateway, QueryGateway queryGateway) {
         this.commandGateway = commandGateway;
@@ -38,40 +35,45 @@ public class MoneyTransferSaga {
                 event.getReceiverAccountId(),
                 event.getAmount()
         );
-        commandGateway.send(transferMoneyCommand);
         logger.info("Money transfer started");
+        commandGateway.send(transferMoneyCommand);
 
     }
 
     @EventHandler
     public void handleMoneyTransferredClaim(MoneyTransferredEvent event) {
-
         logger.info("Money transfred");
         // 2. Aşama: Alıcı hesaba para yatır
         DepositMoneyCommand depositMoneyCommand = new DepositMoneyCommand(
                 event.getReceiverAccountId(),
                 event.getAmount()
         );
+
         commandGateway.send(depositMoneyCommand);
-    }
 
-    @EventHandler
-    public void handleMoneyTransferredGive(MoneyTransferredEvent event) {
-
-        logger.info("Money transfred");
-        // 2. Aşama: Alıcı hesaba para yatır
         WithdrawMoneyCommand withdrawMoneyCommand = new WithdrawMoneyCommand(
                 event.getSenderAccountId(),
                 event.getAmount()
         );
+
         commandGateway.send(withdrawMoneyCommand);
     }
+//
+//    @EventHandler
+//    public void handleMoneyTransferredGive(MoneyTransferredEvent event) {
+//        logger.info("Money transfred");
+//        // 2. Aşama: Alıcı hesaba para yatır
+//        WithdrawMoneyCommand withdrawMoneyCommand = new WithdrawMoneyCommand(
+//                event.getSenderAccountId(),
+//                event.getAmount()
+//        );
+//        commandGateway.send(withdrawMoneyCommand);
+//    }
 
 
 
     @EventHandler
     public void handleMoneyTransferFailed(MoneyTransferFailedEvent event) {
-
         WithdrawMoneyCommand withdrawMoneyCommand = new WithdrawMoneyCommand(
                 event.getSenderAccountId(),
                 event.getAmount()

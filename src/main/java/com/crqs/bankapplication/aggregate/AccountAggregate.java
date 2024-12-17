@@ -5,14 +5,11 @@ import com.crqs.bankapplication.aggregate.commands.DepositMoneyCommand;
 import com.crqs.bankapplication.aggregate.commands.TransferMoneyCommand;
 import com.crqs.bankapplication.aggregate.commands.WithdrawMoneyCommand;
 import com.crqs.bankapplication.aggregate.events.*;
-import com.crqs.bankapplication.aggregate.queries.FindAccountQuery;
-import com.crqs.bankapplication.aggregate.queries.model.AccountEventHandler;
 import com.crqs.bankapplication.aggregate.queries.model.AccountQueryService;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
-import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +46,12 @@ public class AccountAggregate {
     public void handle(DepositMoneyCommand command){
         validateAmount(command.getAmount());
 
+        logger.info("Deposit yapiliyor {} icin : {}", command.getAccountId(),command.getAmount());
+
         this.balance = this.balance.add(command.getAmount());
+
+        logger.info("Deposit yapildi balance: {}", this.balance);
+
         AggregateLifecycle.apply(new MoneyDepositedEvent(command.getAccountId(), command.getAmount(), this.balance));
     }
 
@@ -61,10 +63,10 @@ public class AccountAggregate {
             throw new IllegalArgumentException("Insufficient balance.");
         }
 
-        logger.info("Withdraw yapiliyor: {}", command.getAccountId());
+        logger.info("Withdraw yapiliyor {} icin : {}", command.getAccountId(),command.getAmount());
 
         this.balance = this.balance.subtract(command.getAmount());
-
+        logger.info("Withdraw yapildi balance: {}", this.balance);
         AggregateLifecycle.apply(new MoneyWithdrawnEvent(command.getAccountId(), command.getAmount(), this.balance));
     }
 
@@ -78,10 +80,9 @@ public class AccountAggregate {
 
         // Transfer işlemi başladı: Sender account'dan para düşülüyor
         this.balance = this.balance.subtract(command.getAmount());
-        AggregateLifecycle.apply(new MoneyTransferredEvent(command.getSourceAccountId(), command.getDestinationAccountId(), command.getAmount()));
+
+        AggregateLifecycle.apply(new MoneyTransferredEvent(this.accountId, command.getDestinationAccountId(), command.getAmount()));
     }
-
-
 
     @EventSourcingHandler
     public void on(AccountCreatedEvent event){
@@ -111,15 +112,6 @@ public class AccountAggregate {
                 event.getAmount());
 
         logger.info("Accountid: {}" , this.accountId);
-        // Gönderen hesabı bakiyesi güncelleniyor
-        if (this.accountId.equals(event.getSenderAccountId())) {
-            this.balance = this.balance.subtract(event.getAmount());
-        }
-
-        // Alıcı hesabı bakiyesi güncelleniyor
-        if (this.accountId.equals(event.getReceiverAccountId())) {
-            this.balance = this.balance.add(event.getAmount());
-        }
 
     }
 
