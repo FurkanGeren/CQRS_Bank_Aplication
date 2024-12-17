@@ -61,6 +61,8 @@ public class AccountAggregate {
             throw new IllegalArgumentException("Insufficient balance.");
         }
 
+        logger.info("Withdraw yapiliyor: {}", command.getAccountId());
+
         this.balance = this.balance.subtract(command.getAmount());
 
         AggregateLifecycle.apply(new MoneyWithdrawnEvent(command.getAccountId(), command.getAmount(), this.balance));
@@ -69,52 +71,17 @@ public class AccountAggregate {
     @CommandHandler
     public void handle(TransferMoneyCommand command) {
         validateAmount(command.getAmount());
+
         if (balance.compareTo(command.getAmount()) < 0) {
-            throw new IllegalArgumentException("Yetersiz bakiye.");
+            throw new IllegalArgumentException("Insufficient balance.");
         }
-        logger.info("balance: {}", this.balance);
-        logger.info("amount: {}", command.getAmount());
 
-
+        // Transfer işlemi başladı: Sender account'dan para düşülüyor
         this.balance = this.balance.subtract(command.getAmount());
-
-        logger.info("balance after subtract: {}", this.balance);
-
-        AggregateLifecycle.apply(new MoneySentEvent(
-                command.getSourceAccountId(),
-                command.getDestinationAccountId(),
-                command.getAmount(),
-                this.balance
-        ));
-        BigDecimal destinationBalance = accountQueryService.getDestinationAccountBalance(command.getDestinationAccountId());
-
-        BigDecimal destinationBalanceAfterTransfer = destinationBalance.add(command.getAmount());
-
-        logger.info("destinationBalance: {}", destinationBalance);
-
-        logger.info("destinationBalanceAfterTransfer: {}", destinationBalanceAfterTransfer);
-
-        AggregateLifecycle.apply(new MoneyReceivedEvent(
-                command.getDestinationAccountId(),
-                command.getSourceAccountId(),
-                command.getAmount(),
-                destinationBalanceAfterTransfer
-        ));
+        AggregateLifecycle.apply(new MoneyTransferredEvent(command.getSourceAccountId(), command.getDestinationAccountId(), command.getAmount()));
     }
 
-    @EventSourcingHandler
-    public void on(MoneySentEvent event) {
-        //this.balance = this.balance.add(event.getAmount());
-        logger.info("MoneySentEvent applied, new balance for source account: {}", event.getSourceBalance());
-        this.balance = event.getSourceBalance();
-    }
 
-//    @EventSourcingHandler
-//    public void on(MoneyReceivedEvent event) {
-//        //this.balance = this.balance.subtract(event.getAmount());
-//        logger.info("MoneyReceivedEvent applied, new balance for destination account: {}", event.getDestinationBalance());
-//        this.balance = event.getDestinationBalance();
-//    }
 
     @EventSourcingHandler
     public void on(AccountCreatedEvent event){
@@ -132,7 +99,28 @@ public class AccountAggregate {
 
     @EventSourcingHandler
     public void on(MoneyWithdrawnEvent event) {
+        logger.info("MoneyWithdrawnEvent applied, new balance for destination account: {}", event.getAmount());
         this.balance = this.balance.subtract(event.getAmount());
+    }
+
+    @EventSourcingHandler
+    public void on(MoneyTransferredEvent event) {
+        logger.info("Money transferred from {} to {}: {}",
+                event.getSenderAccountId(),
+                event.getReceiverAccountId(),
+                event.getAmount());
+
+        logger.info("Accountid: {}" , this.accountId);
+        // Gönderen hesabı bakiyesi güncelleniyor
+        if (this.accountId.equals(event.getSenderAccountId())) {
+            this.balance = this.balance.subtract(event.getAmount());
+        }
+
+        // Alıcı hesabı bakiyesi güncelleniyor
+        if (this.accountId.equals(event.getReceiverAccountId())) {
+            this.balance = this.balance.add(event.getAmount());
+        }
+
     }
 
     private void validateAmount(BigDecimal amount){

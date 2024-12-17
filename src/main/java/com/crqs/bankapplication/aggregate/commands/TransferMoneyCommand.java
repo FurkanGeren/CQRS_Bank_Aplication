@@ -5,6 +5,7 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier;
 import java.math.BigDecimal;
 
 public class TransferMoneyCommand {
+
     @TargetAggregateIdentifier
     private final String sourceAccountId;
     private final String destinationAccountId;

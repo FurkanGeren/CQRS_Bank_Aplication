@@ -4,6 +4,7 @@ import com.crqs.bankapplication.aggregate.commands.CreateAccountCommand;
 import com.crqs.bankapplication.aggregate.commands.DepositMoneyCommand;
 import com.crqs.bankapplication.aggregate.commands.TransferMoneyCommand;
 import com.crqs.bankapplication.aggregate.commands.WithdrawMoneyCommand;
+import com.crqs.bankapplication.aggregate.events.MoneyTransferRequestedEvent;
 import com.crqs.bankapplication.dto.CreateAccountRequest;
 import com.crqs.bankapplication.dto.DepositMoneyRequest;
 import com.crqs.bankapplication.dto.TransferMoneyRequest;
@@ -53,8 +54,10 @@ public class AccountCommandController {
 
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferMoneyRequest request) {
-        TransferMoneyCommand command = new TransferMoneyCommand(request.getSourceAccountId(), request.getDestinationAccountId(), request.getAmount());
-        commandGateway.sendAndWait(command);
+        commandGateway.send(new TransferMoneyCommand(request.getSourceAccountId(),
+                request.getDestinationAccountId(),
+                request.getAmount()));
+
         return ResponseEntity.ok("Money transfer successfully!");
     }
 

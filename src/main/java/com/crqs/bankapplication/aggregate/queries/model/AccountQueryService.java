@@ -1,19 +1,25 @@
 package com.crqs.bankapplication.aggregate.queries.model;
 
+import com.crqs.bankapplication.aggregate.commands.DepositMoneyCommand;
 import com.crqs.bankapplication.aggregate.queries.FindAccountQuery;
 import com.crqs.bankapplication.aggregate.queries.GetAccountBalance;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.queryhandling.QueryGateway;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class AccountQueryService {
 
     private final QueryGateway queryGateway;
+    private final CommandGateway commandGateway;
 
-    public AccountQueryService(QueryGateway queryGateway) {
+    public AccountQueryService(QueryGateway queryGateway, CommandGateway commandGateway) {
         this.queryGateway = queryGateway;
+        this.commandGateway = commandGateway;
     }
 
     // Alıcı hesabının bakiyesini sorgulayan metot
@@ -23,4 +29,22 @@ public class AccountQueryService {
                 BigDecimal.class
         ).join();
     }
+
+    @Async
+    public CompletableFuture<Void> updateReceiverAccountBalanceAsync(String receiverAccountId, BigDecimal amount) {
+        // Alıcı hesabına para yatırma komutu oluşturuluyor
+        DepositMoneyCommand depositCommand = new DepositMoneyCommand(
+                receiverAccountId,
+                amount
+        );
+
+        // DepositMoneyCommand gönderiliyor
+        return commandGateway.send(depositCommand)
+                .thenAccept(result -> {
+                    // İşlem başarılıysa log yazabiliriz
+                    System.out.println("Alıcı hesabına para yatırıldı.");
+                });
+    }
+
 }
+
