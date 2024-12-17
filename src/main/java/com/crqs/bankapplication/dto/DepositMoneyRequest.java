@@ -1,18 +1,6 @@
 package com.crqs.bankapplication.dto;
 
-
 import java.math.BigDecimal;
 
-
-public class DepositMoneyRequest {
-
-    private BigDecimal amount;
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
+public record DepositMoneyRequest(String accountId, String description, BigDecimal amount) {
 }

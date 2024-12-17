@@ -42,48 +42,6 @@ public class AccountAggregate {
         AggregateLifecycle.apply(new AccountCreatedEvent(command.getAccountId(), command.getInitialBalance(), command.getUserFirstName(), command.getUserLastName()));
     }
 
-    @CommandHandler
-    public void handle(DepositMoneyCommand command){
-        validateAmount(command.getAmount());
-
-        logger.info("Deposit yapiliyor {} icin : {}", command.getAccountId(),command.getAmount());
-
-        this.balance = this.balance.add(command.getAmount());
-
-        logger.info("Deposit yapildi balance: {}", this.balance);
-
-        AggregateLifecycle.apply(new MoneyDepositedEvent(command.getAccountId(), command.getAmount(), this.balance));
-    }
-
-    @CommandHandler
-    public void handle(WithdrawMoneyCommand command) {
-        validateAmount(command.getAmount());
-
-        if (balance.compareTo(command.getAmount()) < 0) {
-            throw new IllegalArgumentException("Insufficient balance.");
-        }
-
-        logger.info("Withdraw yapiliyor {} icin : {}", command.getAccountId(),command.getAmount());
-
-        this.balance = this.balance.subtract(command.getAmount());
-        logger.info("Withdraw yapildi balance: {}", this.balance);
-        AggregateLifecycle.apply(new MoneyWithdrawnEvent(command.getAccountId(), command.getAmount(), this.balance));
-    }
-
-    @CommandHandler
-    public void handle(TransferMoneyCommand command) {
-        validateAmount(command.getAmount());
-
-        if (balance.compareTo(command.getAmount()) < 0) {
-            throw new IllegalArgumentException("Insufficient balance.");
-        }
-
-        // Transfer işlemi başladı: Sender account'dan para düşülüyor
-        this.balance = this.balance.subtract(command.getAmount());
-
-        AggregateLifecycle.apply(new MoneyTransferredEvent(this.accountId, command.getDestinationAccountId(), command.getAmount()));
-    }
-
     @EventSourcingHandler
     public void on(AccountCreatedEvent event){
         this.accountId = event.getAccountId();
@@ -92,28 +50,57 @@ public class AccountAggregate {
         this.userLastName = event.getUserLastName();
     }
 
+
+    @CommandHandler
+    public void handle(DepositMoneyCommand command){
+        logger.info("DepositMoneyCommand handled");
+
+        this.balance = this.balance.add(command.getAmount());
+        logger.info("DepositMoneyCommand handled balance: {}", this.balance);
+
+        AggregateLifecycle.apply(new MoneyDepositedEvent(
+                command.getAccountId(),
+                command.getAmount(),
+                this.balance,
+                command.getDescription()
+        ));
+    }
+
     @EventSourcingHandler
     public void on(MoneyDepositedEvent event) {
-        logger.info("MoneyDepositedEvent applied, new balance for destination account: {}", event.getAmount());
-        this.balance = this.balance.add(event.getAmount());
+        logger.info("MoneyDepositedEvent handled");
+        this.accountId = event.getAccountId();
+        this.balance = event.getBalance();
+    }
+
+
+    @CommandHandler
+    public void handle(WithdrawMoneyCommand command) {
+        logger.info("WithdrawMoneyCommand handled");
+        if (this.balance.compareTo(BigDecimal.ZERO) > 0 && this.balance.compareTo(command.getAmount()) < 0) {
+            throw new IllegalArgumentException("Balance not sufficient => " + this.balance);
+        } else {
+            this.balance = this.balance.subtract(command.getAmount());
+            logger.info("WithdrawMoneyCommand handled balance: {}", this.balance);
+            AggregateLifecycle.apply(new MoneyWithdrawnEvent(
+                    command.getAccountId(),
+                    command.getAmount(),
+                    this.balance,
+                    command.getDescription()
+            ));
+        }
+
     }
 
     @EventSourcingHandler
     public void on(MoneyWithdrawnEvent event) {
-        logger.info("MoneyWithdrawnEvent applied, new balance for destination account: {}", event.getAmount());
-        this.balance = this.balance.subtract(event.getAmount());
+       logger.info("MoneyWithdrawnEvent handled");
+       this.accountId = event.getAccountId();
+       this.balance = event.getBalance();
+       logger.info("MoneyWithdrawnEvent handled balance: {}", this.balance);
     }
 
-    @EventSourcingHandler
-    public void on(MoneyTransferredEvent event) {
-        logger.info("Money transferred from {} to {}: {}",
-                event.getSenderAccountId(),
-                event.getReceiverAccountId(),
-                event.getAmount());
 
-        logger.info("Accountid: {}" , this.accountId);
-
-    }
 
     private void validateAmount(BigDecimal amount){
         if(amount.compareTo(BigDecimal.ZERO) < 0){

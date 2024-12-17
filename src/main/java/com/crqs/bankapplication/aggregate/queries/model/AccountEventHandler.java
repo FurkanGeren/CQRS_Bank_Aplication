@@ -70,13 +70,7 @@ public class AccountEventHandler {
         accountRepository.save(sourceAccount);
     }
 
-    @EventHandler
-    public void on(MoneyReceivedEvent event) {
-        Account destinationAccount = accountRepository.findById(event.getDestinationAccountId()).orElseThrow();
-        logger.info("Event balance received: {}", event.getDestinationBalance());
-        destinationAccount.setBalance(event.getDestinationBalance());
-        accountRepository.save(destinationAccount);
-    }
+
 
     @QueryHandler
     public AccountResponse handle(FindAccountQuery event) {
@@ -127,17 +121,7 @@ public class AccountEventHandler {
                         formattedTimestamp,
                         sentEvent.getSourceBalance()
                 ));
-            } else if (event.getPayload() instanceof MoneyReceivedEvent receivedEvent) {
-                Instant eventTimestamp = event.getTimestamp();
-                LocalDateTime eventDateTime = LocalDateTime.ofInstant(eventTimestamp, ZoneId.systemDefault());
-                String formattedTimestamp = eventDateTime.format(DateTimeFormatter.ofPattern("dd-MMMM-yyyy HH:mm:ss"));
 
-                transactionHistory.add(new TransactionResponse(
-                        "TRANSFER",
-                        "+" + receivedEvent.getAmount(),
-                        formattedTimestamp,
-                        receivedEvent.getDestinationBalance()
-                ));
             }
         }
         return transactionHistory;

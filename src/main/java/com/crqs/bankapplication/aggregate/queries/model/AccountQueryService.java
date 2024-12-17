@@ -30,21 +30,6 @@ public class AccountQueryService {
         ).join();
     }
 
-    @Async
-    public CompletableFuture<Void> updateReceiverAccountBalanceAsync(String receiverAccountId, BigDecimal amount) {
-        // Alıcı hesabına para yatırma komutu oluşturuluyor
-        DepositMoneyCommand depositCommand = new DepositMoneyCommand(
-                receiverAccountId,
-                amount
-        );
-
-        // DepositMoneyCommand gönderiliyor
-        return commandGateway.send(depositCommand)
-                .thenAccept(result -> {
-                    // İşlem başarılıysa log yazabiliriz
-                    System.out.println("Alıcı hesabına para yatırıldı.");
-                });
-    }
 
 }
 

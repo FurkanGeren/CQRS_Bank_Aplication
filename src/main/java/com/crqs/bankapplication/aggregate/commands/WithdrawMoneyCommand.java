@@ -8,10 +8,16 @@ public class WithdrawMoneyCommand {
     @TargetAggregateIdentifier
     private final String accountId;
     private final BigDecimal amount;
+    private final String description;
 
-    public WithdrawMoneyCommand(String accountId, BigDecimal amount) {
+    public WithdrawMoneyCommand(String accountId, BigDecimal amount, String description) {
         this.accountId = accountId;
         this.amount = amount;
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public String getAccountId() {
