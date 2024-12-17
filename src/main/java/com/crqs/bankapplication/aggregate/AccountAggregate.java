@@ -2,7 +2,6 @@ package com.crqs.bankapplication.aggregate;
 
 import com.crqs.bankapplication.aggregate.commands.CreateAccountCommand;
 import com.crqs.bankapplication.aggregate.commands.DepositMoneyCommand;
-import com.crqs.bankapplication.aggregate.commands.TransferMoneyCommand;
 import com.crqs.bankapplication.aggregate.commands.WithdrawMoneyCommand;
 import com.crqs.bankapplication.aggregate.events.*;
 import com.crqs.bankapplication.aggregate.queries.model.AccountQueryService;

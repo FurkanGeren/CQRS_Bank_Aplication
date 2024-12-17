@@ -27,28 +27,20 @@ public class AccountCommandController {
         this.commandGateway = commandGateway;
     }
 
-    // Hesap oluşturma
+
     @PostMapping
     public ResponseEntity<String> createAccount(@RequestBody CreateAccountRequest request) {
         String accountId = UUID.randomUUID().toString();
         BigDecimal bigDecimal = new BigDecimal("0.0");
-        CreateAccountCommand command = new CreateAccountCommand(accountId, bigDecimal, request.getFirstName(), request.getLastName());
+        CreateAccountCommand command = new CreateAccountCommand(accountId, bigDecimal, request.firstName(), request.lastName());
         commandGateway.sendAndWait(command);
         return ResponseEntity.ok("Account created with ID: " + accountId);
     }
 
-//    // Para yatırma
-//    @PostMapping("/{accountId}/deposit")
-//    public ResponseEntity<String> depositMoney(@PathVariable String accountId, @RequestBody DepositMoneyRequest request) {
-//        DepositMoneyCommand command = new DepositMoneyCommand(accountId, request.getAmount());
-//        commandGateway.sendAndWait(command);
-//        return ResponseEntity.ok("Money deposited successfully!");
-//    }
+
 
     @PostMapping("/deposit")
     public CompletableFuture<String> depositMoney(@RequestBody DepositMoneyRequest request) {
-//        DepositMoneyCommand command = new DepositMoneyCommand(request.getAmount());
-//        commandGateway.sendAndWait(command);
         return commandGateway.send(
                 new DepositMoneyCommand(
                         request.accountId(),
@@ -58,12 +50,8 @@ public class AccountCommandController {
         );
     }
 
-    // Para çekme
     @PostMapping("/withdraw")
     public CompletableFuture<String> withdrawMoney(@RequestBody WithdrawMoneyRequest request) {
-//        WithdrawMoneyCommand command = new WithdrawMoneyCommand(accountId, request.getAmount());
-//        commandGateway.sendAndWait(command);
-//        return ResponseEntity.ok("Money withdrawn successfully!");
         return commandGateway.send(
                 new WithdrawMoneyCommand(
                         request.accountId(),
@@ -75,9 +63,6 @@ public class AccountCommandController {
 
     @PostMapping("/transfer")
     public List<CompletableFuture<String>> transfer(@RequestBody TransferMoneyRequest request) {
-//        commandGateway.send(new TransferMoneyCommand(request.getSourceAccountId(),
-//                request.getDestinationAccountId(),
-//                request.getAmount()));
         List<CompletableFuture<String>> completableFutures = new ArrayList<>();
         String messageFrom = request.description() + "| transfer to:" + request.toAccount();
 
