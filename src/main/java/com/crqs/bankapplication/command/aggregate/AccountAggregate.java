@@ -1,10 +1,9 @@
 package com.crqs.bankapplication.command.aggregate;
 
-import com.crqs.bankapplication.common.commands.CreateAccountCommand;
-import com.crqs.bankapplication.common.commands.DepositMoneyCommand;
-import com.crqs.bankapplication.common.commands.WithdrawMoneyCommand;
+import com.crqs.bankapplication.common.commands.account.CreateAccountCommand;
+import com.crqs.bankapplication.common.commands.account.DepositMoneyCommand;
+import com.crqs.bankapplication.common.commands.account.WithdrawMoneyCommand;
 import com.crqs.bankapplication.common.exception.BalanceNotSufficientException;
-import com.crqs.bankapplication.query.service.account.AccountQueryService;
 import com.crqs.bankapplication.common.events.AccountCreatedEvent;
 import com.crqs.bankapplication.common.events.MoneyDepositedEvent;
 import com.crqs.bankapplication.common.events.MoneyWithdrawnEvent;
@@ -16,7 +15,6 @@ import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 
@@ -26,14 +24,12 @@ public class AccountAggregate {
     @AggregateIdentifier
     private String accountId;
     private BigDecimal balance;
-    private String userFirstName;
-    private String userLastName;
+    private String customerId;
+
 
     private static final Logger logger = LoggerFactory.getLogger(AccountAggregate.class);
 
 
-    @Autowired
-    private AccountQueryService accountQueryService;
 
     public AccountAggregate() {
     }
@@ -42,15 +38,14 @@ public class AccountAggregate {
     public AccountAggregate(CreateAccountCommand command){
         validateAmount(command.getInitialBalance());
 
-        AggregateLifecycle.apply(new AccountCreatedEvent(command.getAccountId(), command.getInitialBalance(), command.getUserFirstName(), command.getUserLastName()));
+        AggregateLifecycle.apply(new AccountCreatedEvent(command.getAccountId(), command.getInitialBalance(), command.getCustomerId()));
     }
 
     @EventSourcingHandler
     public void on(AccountCreatedEvent event){
         this.accountId = event.getAccountId();
         this.balance = event.getInitialBalance();
-        this.userFirstName = event.getUserFirstName();
-        this.userLastName = event.getUserLastName();
+        this.customerId = event.getCustomerId();
     }
 
 

@@ -1,12 +1,11 @@
 package com.crqs.bankapplication.command.controller;
 
-import com.crqs.bankapplication.common.commands.CreateAccountCommand;
-import com.crqs.bankapplication.common.commands.DepositMoneyCommand;
-import com.crqs.bankapplication.common.commands.WithdrawMoneyCommand;
-import com.crqs.bankapplication.common.dto.CreateAccountRequest;
-import com.crqs.bankapplication.common.dto.DepositMoneyRequest;
-import com.crqs.bankapplication.common.dto.TransferMoneyRequest;
-import com.crqs.bankapplication.common.dto.WithdrawMoneyRequest;
+import com.crqs.bankapplication.command.service.TransferService;
+import com.crqs.bankapplication.common.commands.account.CreateAccountCommand;
+import com.crqs.bankapplication.common.commands.account.DepositMoneyCommand;
+import com.crqs.bankapplication.common.commands.account.WithdrawMoneyCommand;
+import com.crqs.bankapplication.common.dto.*;
+import com.crqs.bankapplication.common.enums.OperationType;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +21,14 @@ import java.util.concurrent.CompletableFuture;
 public class AccountCommandController {
 
     private final CommandGateway commandGateway;
+    private final TransferService transferService;
 
     private static final Logger logger = LoggerFactory.getLogger(AccountCommandController.class);
 
 
-    public AccountCommandController(CommandGateway commandGateway) {
+    public AccountCommandController(CommandGateway commandGateway, TransferService transferService) {
         this.commandGateway = commandGateway;
+        this.transferService = transferService;
     }
 
 
@@ -35,7 +36,7 @@ public class AccountCommandController {
     public ResponseEntity<String> createAccount(@RequestBody CreateAccountRequest request) {
         String accountId = UUID.randomUUID().toString();
         BigDecimal bigDecimal = new BigDecimal("0.0");
-        CreateAccountCommand command = new CreateAccountCommand(accountId, bigDecimal, request.firstName(), request.lastName());
+        CreateAccountCommand command = new CreateAccountCommand(accountId, bigDecimal, request.customerId());
         commandGateway.sendAndWait(command);
         return ResponseEntity.ok("Account created with ID: " + accountId);
     }
@@ -48,37 +49,26 @@ public class AccountCommandController {
                 new DepositMoneyCommand(
                         request.accountId(),
                         request.amount(),
-                        request.description()
+                        OperationType.DEPOSIT.name()
                 )
         );
     }
 
     @PostMapping("/withdraw")
-    public CompletableFuture<String> withdrawMoney(@RequestBody WithdrawMoneyRequest request) {
+    private CompletableFuture<String> withdrawMoney(@RequestBody WithdrawMoneyRequest request) {
+
         return commandGateway.send(
                 new WithdrawMoneyCommand(
                         request.accountId(),
                         request.amount(),
-                        request.description()
+                        OperationType.WITHDRAWAL.name()
                 )
         );
     }
 
     @PostMapping("/transfer")
     public ResponseEntity<?> transfer(@RequestBody TransferMoneyRequest request) {
-        // Withdraw amount from sender account
-        String messageFrom = request.description() + "| transfer to:" + request.toAccount();
-        CompletableFuture<String> withdraw = withdrawMoney(new WithdrawMoneyRequest(
-                request.fromAccount(), messageFrom, request.amount()
-        ));
-        withdraw.join();
-
-        // Deposit amount to receiver account
-        String messageTo = request.description() + "| transfer from:" + request.fromAccount();
-        CompletableFuture<String> deposit = depositMoney(new DepositMoneyRequest(
-                request.toAccount(), messageTo, request.amount()
-        ));
-        deposit.join();
+        transferService.transferMoney(request);
         return ResponseEntity.ok("Transfer completed successfully.");
     }
 

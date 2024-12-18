@@ -6,14 +6,12 @@ import java.util.Objects;
 public class AccountCreatedEvent {
     private final String accountId;
     private final BigDecimal initialBalance;
-    private final String userFirstName;
-    private final String userLastName;
+    private final String customerId;
 
-    public AccountCreatedEvent(String accountId, BigDecimal initialBalance, String userFirstName, String userLastName) {
+    public AccountCreatedEvent(String accountId, BigDecimal initialBalance, String customerId) {
         this.accountId = accountId;
         this.initialBalance = initialBalance;
-        this.userFirstName = userFirstName;
-        this.userLastName = userLastName;
+        this.customerId = customerId;
     }
 
     @Override
@@ -21,20 +19,16 @@ public class AccountCreatedEvent {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AccountCreatedEvent that = (AccountCreatedEvent) o;
-        return Objects.equals(accountId, that.accountId) && Objects.equals(initialBalance, that.initialBalance) && Objects.equals(userFirstName, that.userFirstName) && Objects.equals(userLastName, that.userLastName);
+        return Objects.equals(accountId, that.accountId) && Objects.equals(initialBalance, that.initialBalance) && Objects.equals(customerId, that.customerId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(accountId, initialBalance, userFirstName, userLastName);
+        return Objects.hash(accountId, initialBalance, customerId);
     }
 
-    public String getUserFirstName() {
-        return userFirstName;
-    }
-
-    public String getUserLastName() {
-        return userLastName;
+    public String getCustomerId() {
+        return customerId;
     }
 
     public String getAccountId() {

@@ -1,32 +1,42 @@
-package com.crqs.bankapplication.command.handler;
+package com.crqs.bankapplication.query.service.account;
 
 import com.crqs.bankapplication.common.events.AccountCreatedEvent;
 import com.crqs.bankapplication.common.events.MoneyDepositedEvent;
-import com.crqs.bankapplication.common.events.MoneySentEvent;
 import com.crqs.bankapplication.common.events.MoneyWithdrawnEvent;
-import com.crqs.bankapplication.common.model.Account;
+import com.crqs.bankapplication.query.entity.Account;
+import com.crqs.bankapplication.query.entity.Customer;
 import com.crqs.bankapplication.query.repository.AccountRepository;
+import com.crqs.bankapplication.query.repository.CustomerRepository;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @ProcessingGroup("account")
 public class AccountEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AccountEventHandler.class);
 
     private final AccountRepository accountRepository;
+    private final CustomerRepository customerRepository;
 
-    public AccountEventHandler(AccountRepository accountRepository) {
+    public AccountEventHandler(AccountRepository accountRepository, CustomerRepository customerRepository) {
         this.accountRepository = accountRepository;
+        this.customerRepository = customerRepository;
     }
 
     @EventHandler
     public void on(AccountCreatedEvent event) {
-        accountRepository.save(new Account(event.getAccountId(), event.getInitialBalance(), event.getUserFirstName(), event.getUserLastName()));
+        Customer customer = customerRepository.findById(event.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("customer not found")); // TODO CustomerNotFoundException
+        if(customer.getAccount() != null){
+            throw new RuntimeException("this customer already has an account"); // TODO CustomerAlreadyHaveAccountException
+        }
+        accountRepository.save(new Account(event.getAccountId(), event.getInitialBalance(), customer));
     }
 
     @EventHandler

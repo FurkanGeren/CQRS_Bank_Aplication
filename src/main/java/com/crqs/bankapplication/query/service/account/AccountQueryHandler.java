@@ -1,9 +1,10 @@
-package com.crqs.bankapplication.query.handler;
+package com.crqs.bankapplication.query.service.account;
 
+import com.crqs.bankapplication.common.enums.OperationType;
 import com.crqs.bankapplication.common.events.MoneyDepositedEvent;
 import com.crqs.bankapplication.common.events.MoneySentEvent;
 import com.crqs.bankapplication.common.events.MoneyWithdrawnEvent;
-import com.crqs.bankapplication.common.model.Account;
+import com.crqs.bankapplication.query.entity.Account;
 import com.crqs.bankapplication.common.query.FindAccountHistoryQuery;
 import com.crqs.bankapplication.common.query.FindAccountQuery;
 import com.crqs.bankapplication.common.query.GetAccountBalanceQuery;
@@ -61,24 +62,45 @@ public class AccountQueryHandler {
                 LocalDateTime eventDateTime = LocalDateTime.ofInstant(eventTimestamp, ZoneId.systemDefault());
                 String formattedTimestamp = eventDateTime.format(DateTimeFormatter.ofPattern("dd-MMMM-yyyy HH:mm:ss"));
 
-                transactionHistory.add(new TransactionResponse(
-                        "DEPOSIT",
-                        "+" + depositEvent.getAmount(),
-                        formattedTimestamp,
-                        depositEvent.getBalance()
-                ));
+
+                if (!depositEvent.getDescription().equals(OperationType.DEPOSIT.name())){
+                    transactionHistory.add(new TransactionResponse(
+                            "Para alma",
+                            "+" + depositEvent.getAmount(),
+                            formattedTimestamp,
+                            depositEvent.getBalance()
+                    ));
+                }else {
+                    transactionHistory.add(new TransactionResponse(
+                            "DEPOSIT",
+                            "+" + depositEvent.getAmount(),
+                            formattedTimestamp,
+                            depositEvent.getBalance()
+                    ));
+                }
+
             } else if (event.getPayload() instanceof MoneyWithdrawnEvent withdrawalEvent) {
 
                 Instant eventTimestamp = event.getTimestamp();
                 LocalDateTime eventDateTime = LocalDateTime.ofInstant(eventTimestamp, ZoneId.systemDefault());
                 String formattedTimestamp = eventDateTime.format(DateTimeFormatter.ofPattern("dd-MMMM-yyyy HH:mm:ss"));
 
-                transactionHistory.add(new TransactionResponse(
-                        "WITHDRAWAL",
-                        "-" + withdrawalEvent.getAmount(),
-                        formattedTimestamp,
-                        withdrawalEvent.getBalance()
-                ));
+                if (!withdrawalEvent.getDescription().equals(OperationType.WITHDRAWAL.name())){
+                    transactionHistory.add(new TransactionResponse(
+                            "Para alma",
+                            "-" + withdrawalEvent.getAmount(),
+                            formattedTimestamp,
+                            withdrawalEvent.getBalance()
+                    ));
+                }else {
+                    transactionHistory.add(new TransactionResponse(
+                            "WITHDRAWAL",
+                            "-" + withdrawalEvent.getAmount(),
+                            formattedTimestamp,
+                            withdrawalEvent.getBalance()
+                    ));
+                }
+
             } else if(event.getPayload() instanceof MoneySentEvent sentEvent) {
                 Instant eventTimestamp = event.getTimestamp();
                 LocalDateTime eventDateTime = LocalDateTime.ofInstant(eventTimestamp, ZoneId.systemDefault());

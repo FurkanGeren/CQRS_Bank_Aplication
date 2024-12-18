@@ -1,4 +1,4 @@
-package com.crqs.bankapplication.common.commands;
+package com.crqs.bankapplication.common.commands.account;
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
@@ -10,14 +10,12 @@ public class CreateAccountCommand {
     @TargetAggregateIdentifier
     private final String accountId;
     private final BigDecimal initialBalance;
-    private final String userFirstName;
-    private final String userLastName;
+    private final String customerId;
 
-    public CreateAccountCommand(String accountId, BigDecimal initialBalance, String userFirstName, String userLastName) {
+    public CreateAccountCommand(String accountId, BigDecimal initialBalance, String customerId) {
         this.accountId = accountId;
         this.initialBalance = initialBalance;
-        this.userFirstName = userFirstName;
-        this.userLastName = userLastName;
+        this.customerId = customerId;
     }
 
     @Override
@@ -25,20 +23,16 @@ public class CreateAccountCommand {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CreateAccountCommand that = (CreateAccountCommand) o;
-        return Objects.equals(accountId, that.accountId) && Objects.equals(initialBalance, that.initialBalance) && Objects.equals(userFirstName, that.userFirstName) && Objects.equals(userLastName, that.userLastName);
+        return Objects.equals(accountId, that.accountId) && Objects.equals(initialBalance, that.initialBalance) && Objects.equals(customerId, that.customerId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(accountId, initialBalance, userFirstName, userLastName);
+        return Objects.hash(accountId, initialBalance, customerId);
     }
 
-    public String getUserFirstName() {
-        return userFirstName;
-    }
-
-    public String getUserLastName() {
-        return userLastName;
+    public String getCustomerId() {
+        return customerId;
     }
 
     public String getAccountId() {

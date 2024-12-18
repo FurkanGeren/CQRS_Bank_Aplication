@@ -1,4 +1,4 @@
-package com.crqs.bankapplication.common.commands;
+package com.crqs.bankapplication.common.commands.account;
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
