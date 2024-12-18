@@ -3,10 +3,12 @@ package com.crqs.bankapplication.command.aggregate;
 import com.crqs.bankapplication.common.commands.CreateAccountCommand;
 import com.crqs.bankapplication.common.commands.DepositMoneyCommand;
 import com.crqs.bankapplication.common.commands.WithdrawMoneyCommand;
+import com.crqs.bankapplication.common.exception.BalanceNotSufficientException;
 import com.crqs.bankapplication.query.service.account.AccountQueryService;
 import com.crqs.bankapplication.common.events.AccountCreatedEvent;
 import com.crqs.bankapplication.common.events.MoneyDepositedEvent;
 import com.crqs.bankapplication.common.events.MoneyWithdrawnEvent;
+import org.axonframework.commandhandling.CommandExecutionException;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -79,10 +81,12 @@ public class AccountAggregate {
     public void handle(WithdrawMoneyCommand command) {
         logger.info("WithdrawMoneyCommand handled");
         if (this.balance.compareTo(BigDecimal.ZERO) > 0 && this.balance.compareTo(command.getAmount()) < 0) {
-            throw new IllegalArgumentException("Balance not sufficient => " + this.balance);
+            logger.info("Throw exception");
+            throw new CommandExecutionException("Balance not sufficient => " + this.balance,
+                    new BalanceNotSufficientException("Balance not sufficient", this.balance));
         } else {
             this.balance = this.balance.subtract(command.getAmount());
-            logger.info("WithdrawMoneyCommand handled balance: {}", this.balance);
+            logger.info("WithdrawMoneyCommand handled, balance: {}", this.balance);
             AggregateLifecycle.apply(new MoneyWithdrawnEvent(
                     command.getAccountId(),
                     command.getAmount(),
@@ -90,7 +94,6 @@ public class AccountAggregate {
                     command.getDescription()
             ));
         }
-
     }
 
     @EventSourcingHandler

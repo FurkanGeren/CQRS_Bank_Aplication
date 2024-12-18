@@ -8,12 +8,12 @@ import com.crqs.bankapplication.common.dto.DepositMoneyRequest;
 import com.crqs.bankapplication.common.dto.TransferMoneyRequest;
 import com.crqs.bankapplication.common.dto.WithdrawMoneyRequest;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,6 +22,9 @@ import java.util.concurrent.CompletableFuture;
 public class AccountCommandController {
 
     private final CommandGateway commandGateway;
+
+    private static final Logger logger = LoggerFactory.getLogger(AccountCommandController.class);
+
 
     public AccountCommandController(CommandGateway commandGateway) {
         this.commandGateway = commandGateway;
@@ -62,25 +65,21 @@ public class AccountCommandController {
     }
 
     @PostMapping("/transfer")
-    public List<CompletableFuture<String>> transfer(@RequestBody TransferMoneyRequest request) {
-        List<CompletableFuture<String>> completableFutures = new ArrayList<>();
+    public ResponseEntity<?> transfer(@RequestBody TransferMoneyRequest request) {
+        // Withdraw amount from sender account
         String messageFrom = request.description() + "| transfer to:" + request.toAccount();
-
         CompletableFuture<String> withdraw = withdrawMoney(new WithdrawMoneyRequest(
                 request.fromAccount(), messageFrom, request.amount()
-                )
-        );
+        ));
         withdraw.join();
-        completableFutures.add(withdraw);
 
+        // Deposit amount to receiver account
         String messageTo = request.description() + "| transfer from:" + request.fromAccount();
         CompletableFuture<String> deposit = depositMoney(new DepositMoneyRequest(
                 request.toAccount(), messageTo, request.amount()
         ));
-
         deposit.join();
-        completableFutures.add(deposit);
-        return completableFutures;
+        return ResponseEntity.ok("Transfer completed successfully.");
     }
 
 
