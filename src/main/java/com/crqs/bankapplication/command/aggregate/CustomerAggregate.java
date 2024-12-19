@@ -30,7 +30,7 @@ public class CustomerAggregate {
 
     @CommandHandler
     public CustomerAggregate(CreateCustomerCommand command) {
-        logger.info("Creating Customer {}", command.getCustomerId());
+        logger.info("Command received: {}", command);
         AggregateLifecycle.apply(new CustomerCreatedEvent(
                 command.getCustomerId(),
                 command.getFirstName(),
@@ -42,7 +42,7 @@ public class CustomerAggregate {
 
     @EventSourcingHandler
     public void on(CustomerCreatedEvent event) {
-        logger.info("CustomerCreatedEvent sourced");
+        logger.info("EventHandler triggered for event: {}", event);
         this.customerId = event.getCustomerId();
         this.firstName = event.getFirstName();
         this.lastName = event.getLastName();

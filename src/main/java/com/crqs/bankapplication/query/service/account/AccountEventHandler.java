@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-@ProcessingGroup("account")
 public class AccountEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AccountEventHandler.class);
@@ -41,7 +40,7 @@ public class AccountEventHandler {
 
     @EventHandler
     public void on(MoneyDepositedEvent event) {
-        Account account = accountRepository.findById(event.getAccountId()).orElseThrow();
+        Account account = accountRepository.findById(event.getAccountId()).orElseThrow(() -> new RuntimeException("account not found"));
         logger.info("Event balance deposited: {}", event.getBalance());
         account.setBalance(account.getBalance().add(event.getAmount()));
         accountRepository.save(account);
