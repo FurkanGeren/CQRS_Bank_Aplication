@@ -1,7 +1,6 @@
 package com.crqs.bankapplication.command.controller;
 
 
-import com.crqs.bankapplication.command.aggregate.CustomerAggregate;
 import com.crqs.bankapplication.common.commands.customer.CreateCustomerCommand;
 import com.crqs.bankapplication.common.dto.CreateCustomerRequestDTO;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -34,10 +33,14 @@ public class CustomerCommandController {
          commandGateway.send(new CreateCustomerCommand(
                  UUID.randomUUID().toString(), dto.firstName(),
                  dto.lastName(), dto.citizenID(),
-                 dto.sex()
+                 dto.sex(), dto.password()
         ));
          return ResponseEntity.ok().build();
     }
+
+
+
+
 
 
 }

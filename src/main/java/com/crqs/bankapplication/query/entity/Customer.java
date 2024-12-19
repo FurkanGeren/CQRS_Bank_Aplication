@@ -2,9 +2,14 @@ package com.crqs.bankapplication.query.entity;
 
 import com.crqs.bankapplication.common.enums.Sex;
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
-public class Customer {
+public class Customer implements UserDetails {
 
     @Id
     private String id;
@@ -19,6 +24,9 @@ public class Customer {
     private String citizenID;
 
     @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Sex sex;
 
@@ -26,17 +34,56 @@ public class Customer {
     private Account account;
 
 
-    public Customer(String id, String firstName, String lastName, String citizenID, Sex sex, Account account) {
+    public Customer(String id, String firstName, String lastName, String citizenID, String password, Sex sex, Account account) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.citizenID = citizenID;
+        this.password = password;
         this.sex = sex;
         this.account = account;
     }
 
     public Customer() {
 
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return id;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setId(String id) {

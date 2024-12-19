@@ -1,8 +1,10 @@
 package com.crqs.bankapplication.command.aggregate;
 
 import com.crqs.bankapplication.common.commands.customer.CreateCustomerCommand;
+import com.crqs.bankapplication.common.commands.customer.LoginCustomerQuery;
 import com.crqs.bankapplication.common.enums.Sex;
 import com.crqs.bankapplication.common.events.Customer.CustomerCreatedEvent;
+import com.crqs.bankapplication.common.events.Customer.LoginCustomerEvent;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -20,6 +22,7 @@ public class CustomerAggregate {
     private String lastName;
     private String citizenID;
     private Sex sex;
+    private String password;
 
     public CustomerAggregate() {
     }
@@ -36,7 +39,8 @@ public class CustomerAggregate {
                 command.getFirstName(),
                 command.getLastName(),
                 command.getCitizenID(),
-                command.getSex()
+                command.getSex(),
+                command.getPassword()
         ));
     }
 
@@ -48,8 +52,8 @@ public class CustomerAggregate {
         this.lastName = event.getLastName();
         this.citizenID = event.getCitizenID();
         this.sex = event.getSex();
+        this.password = event.getPassword();
     }
-
 
 
 

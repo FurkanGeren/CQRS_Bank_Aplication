@@ -13,13 +13,15 @@ public class CreateCustomerCommand {
     private final String lastName;
     private final String citizenID;
     private final Sex sex;
+    private final String password;
 
-    public CreateCustomerCommand(String customerId, String firstName, String lastName, String citizenID, Sex sex) {
+    public CreateCustomerCommand(String customerId, String firstName, String lastName, String citizenID, Sex sex, String password) {
         this.customerId = customerId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.citizenID = citizenID;
         this.sex = sex;
+        this.password = password;
     }
 
     @Override
@@ -27,12 +29,16 @@ public class CreateCustomerCommand {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CreateCustomerCommand that = (CreateCustomerCommand) o;
-        return Objects.equals(customerId, that.customerId) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(citizenID, that.citizenID) && sex == that.sex;
+        return Objects.equals(customerId, that.customerId) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(citizenID, that.citizenID) && sex == that.sex && Objects.equals(password, that.password);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(customerId, firstName, lastName, citizenID, sex);
+        return Objects.hash(customerId, firstName, lastName, citizenID, sex, password);
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public String getCustomerId() {

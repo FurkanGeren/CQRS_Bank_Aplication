@@ -1,15 +1,16 @@
 package com.crqs.bankapplication.query.controller;
 
+import com.crqs.bankapplication.common.commands.customer.LoginCustomerQuery;
+import com.crqs.bankapplication.common.dto.LoginRequest;
 import com.crqs.bankapplication.common.query.FindAccountHistoryQuery;
 import com.crqs.bankapplication.common.query.FindAccountQuery;
 import com.crqs.bankapplication.query.response.AccountResponse;
+import com.crqs.bankapplication.query.response.LoginResponse;
 import com.crqs.bankapplication.query.response.TransactionResponse;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -35,4 +36,6 @@ public class AccountQueryController {
     public CompletableFuture<List<TransactionResponse>> getAccountHistory(@PathVariable String accountId) {
         return queryGateway.query(new FindAccountHistoryQuery(accountId), ResponseTypes.multipleInstancesOf(TransactionResponse.class));
     }
+
+
 }

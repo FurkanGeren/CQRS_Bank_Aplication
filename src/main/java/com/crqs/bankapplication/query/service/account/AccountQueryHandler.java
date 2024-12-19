@@ -1,5 +1,6 @@
 package com.crqs.bankapplication.query.service.account;
 
+import com.crqs.bankapplication.common.commands.customer.LoginCustomerQuery;
 import com.crqs.bankapplication.common.enums.OperationType;
 import com.crqs.bankapplication.common.events.MoneyDepositedEvent;
 import com.crqs.bankapplication.common.events.MoneySentEvent;
@@ -8,8 +9,10 @@ import com.crqs.bankapplication.query.entity.Account;
 import com.crqs.bankapplication.common.query.FindAccountHistoryQuery;
 import com.crqs.bankapplication.common.query.FindAccountQuery;
 import com.crqs.bankapplication.common.query.GetAccountBalanceQuery;
+import com.crqs.bankapplication.query.entity.Customer;
 import com.crqs.bankapplication.query.repository.AccountRepository;
 import com.crqs.bankapplication.query.response.AccountResponse;
+import com.crqs.bankapplication.query.response.LoginResponse;
 import com.crqs.bankapplication.query.response.TransactionResponse;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.DomainEventMessage;
