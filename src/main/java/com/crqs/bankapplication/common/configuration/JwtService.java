@@ -2,15 +2,10 @@ package com.crqs.bankapplication.common.configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -91,11 +86,11 @@ public class JwtService {
         return null;
     }
 
-    public Authentication getAuthentication(String token) {
-        String username = extractUserName(token);
-        //List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        return new UsernamePasswordAuthenticationToken(username, null, null);
-    }
+//    public Authentication getAuthentication(String token) {
+//        String username = extractUserName(token);
+//        //List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+//        return new UsernamePasswordAuthenticationToken(username, null, null);
+//    }
 
 
     public boolean validateTokenWithUser(String token, UserDetails userDetails) {

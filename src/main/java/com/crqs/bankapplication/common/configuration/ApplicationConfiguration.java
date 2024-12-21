@@ -1,16 +1,12 @@
 package com.crqs.bankapplication.common.configuration;
 
-import com.crqs.bankapplication.command.controller.CustomerCommandController;
 import com.crqs.bankapplication.common.commands.customer.CreateCustomerCommand;
 import com.crqs.bankapplication.common.commands.customer.LoginCustomerQuery;
 import com.crqs.bankapplication.query.repository.CustomerRepository;
 import jakarta.annotation.PostConstruct;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandMessage;
-import org.axonframework.messaging.InterceptorChain;
 import org.axonframework.messaging.MessageDispatchInterceptor;
-import org.axonframework.messaging.MessageHandlerInterceptor;
-import org.axonframework.messaging.unitofwork.UnitOfWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +19,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 
 @Configuration
@@ -74,7 +69,6 @@ public class ApplicationConfiguration {
     @PostConstruct
     public void registerDispatchInterceptor() {
         commandBus.registerDispatchInterceptor((MessageDispatchInterceptor<CommandMessage<?>>) messages -> (index, message) -> {
-            // HTTP isteğinden Authorization başlığını al
             String token = jwtService.extractAuthorizationToken();
             if (token != null) {
                 return message.andMetaData(Map.of("Authorization", token));
@@ -102,12 +96,10 @@ public class ApplicationConfiguration {
                 throw new SecurityException("Missing or invalid token");
             }
 
-            // Token doğrulama
             if (!jwtService.validateToken(token)) {
                 throw new SecurityException("Invalid token");
             }
 
-            // Eğer token geçerliyse, işlem devam etsin
             return interceptorChain.proceed();
 
         });
