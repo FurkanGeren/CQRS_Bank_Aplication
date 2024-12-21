@@ -1,15 +1,11 @@
 package com.crqs.bankapplication.query.controller;
 
-import com.crqs.bankapplication.common.commands.customer.LoginCustomerQuery;
-import com.crqs.bankapplication.common.dto.LoginRequest;
 import com.crqs.bankapplication.common.query.FindAccountHistoryQuery;
 import com.crqs.bankapplication.common.query.FindAccountQuery;
 import com.crqs.bankapplication.query.response.AccountResponse;
-import com.crqs.bankapplication.query.response.LoginResponse;
 import com.crqs.bankapplication.query.response.TransactionResponse;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,10 +28,30 @@ public class AccountQueryController {
     }
 
     // Hesap geçmişini sorgula
-    @GetMapping("/{accountId}/history")
-    public CompletableFuture<List<TransactionResponse>> getAccountHistory(@PathVariable String accountId) {
-        return queryGateway.query(new FindAccountHistoryQuery(accountId), ResponseTypes.multipleInstancesOf(TransactionResponse.class));
-    }
+//    @GetMapping("/{accountId}/history")
+//    public CompletableFuture<List<TransactionResponse>> getAccountHistory(@PathVariable String accountId) {
+//        return queryGateway.query(new FindAccountHistoryQuery(accountId), ResponseTypes.multipleInstancesOf(TransactionResponse.class));
+//    }
 
+//    @GetMapping("/history")
+//    public CompletableFuture<List<TransactionResponse>> getAccountHistory(@RequestHeader("Authorization") String token) {
+//        // "Bearer " kısmını çıkarmak için
+//        if (token == null || !token.startsWith("Bearer ")) {
+//            throw new SecurityException("Missing or invalid Authorization header");
+//        }
+//
+//        // Query gönder ve sonuçları döndür
+//        return queryGateway.query(new FindAccountHistoryQuery(token), ResponseTypes.multipleInstancesOf(TransactionResponse.class));
+//    }
+
+    @GetMapping("/history")
+    public CompletableFuture<List<TransactionResponse>> getAccountHistory(@RequestHeader("Authorization") String token) {
+        if (token == null)
+            throw new SecurityException("Missing or invalid Authorization header");
+        else if (token.startsWith("Bearer "))
+            token = token.substring(7);
+        return queryGateway.query(new FindAccountHistoryQuery(token), ResponseTypes.multipleInstancesOf(TransactionResponse.class));
+
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.crqs.bankapplication.query.service.account;
 
 import com.crqs.bankapplication.common.commands.customer.LoginCustomerQuery;
+import com.crqs.bankapplication.common.configuration.JwtService;
 import com.crqs.bankapplication.common.enums.OperationType;
 import com.crqs.bankapplication.common.events.MoneyDepositedEvent;
 import com.crqs.bankapplication.common.events.MoneySentEvent;
@@ -11,6 +12,7 @@ import com.crqs.bankapplication.common.query.FindAccountQuery;
 import com.crqs.bankapplication.common.query.GetAccountBalanceQuery;
 import com.crqs.bankapplication.query.entity.Customer;
 import com.crqs.bankapplication.query.repository.AccountRepository;
+import com.crqs.bankapplication.query.repository.CustomerRepository;
 import com.crqs.bankapplication.query.response.AccountResponse;
 import com.crqs.bankapplication.query.response.LoginResponse;
 import com.crqs.bankapplication.query.response.TransactionResponse;
@@ -39,10 +41,14 @@ public class AccountQueryHandler {
 
     private final AccountRepository accountRepository;
     private final EventStore eventStore;
+    private final JwtService jwtService;
+    private final CustomerRepository customerRepository;
 
-    public AccountQueryHandler(AccountRepository accountRepository, EventStore eventStore) {
+    public AccountQueryHandler(AccountRepository accountRepository, EventStore eventStore, JwtService jwtService, CustomerRepository customerRepository) {
         this.accountRepository = accountRepository;
         this.eventStore = eventStore;
+        this.jwtService = jwtService;
+        this.customerRepository = customerRepository;
     }
 
     @QueryHandler
@@ -56,7 +62,13 @@ public class AccountQueryHandler {
     public List<TransactionResponse> handle(FindAccountHistoryQuery query) {
         List<TransactionResponse> transactionHistory = new ArrayList<>();
 
-        List<DomainEventMessage<?>> events = eventStore.readEvents(query.getAccountId()).asStream().collect(Collectors.toList());
+        String customerId = jwtService.extractUserName(query.getAccountId());
+        Customer customer = customerRepository.findById(customerId).orElseThrow();
+        String accountId = customer.getAccount().getAccountId();
+        System.out.println(accountId);
+
+
+        List<DomainEventMessage<?>> events = eventStore.readEvents(accountId).asStream().collect(Collectors.toList());
 
         for (DomainEventMessage<?> event : events) {
             if (event.getPayload() instanceof MoneyDepositedEvent depositEvent) {
