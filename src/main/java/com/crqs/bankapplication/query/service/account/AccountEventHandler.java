@@ -3,6 +3,9 @@ package com.crqs.bankapplication.query.service.account;
 import com.crqs.bankapplication.common.events.AccountCreatedEvent;
 import com.crqs.bankapplication.common.events.MoneyDepositedEvent;
 import com.crqs.bankapplication.common.events.MoneyWithdrawnEvent;
+import com.crqs.bankapplication.common.exception.AccountNotFoundException;
+import com.crqs.bankapplication.common.exception.CustomerAlreadyHaveAccountException;
+import com.crqs.bankapplication.common.exception.CustomerNotFoundException;
 import com.crqs.bankapplication.query.entity.Account;
 import com.crqs.bankapplication.query.entity.Customer;
 import com.crqs.bankapplication.query.repository.AccountRepository;
@@ -31,16 +34,14 @@ public class AccountEventHandler {
     @EventHandler
     public void on(AccountCreatedEvent event) {
         Customer customer = customerRepository.findById(event.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("customer not found")); // TODO CustomerNotFoundException
-        if(customer.getAccount() != null){
-            throw new RuntimeException("this customer already has an account"); // TODO CustomerAlreadyHaveAccountException
-        }
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+
         accountRepository.save(new Account(event.getAccountId(), event.getInitialBalance(), customer));
     }
 
     @EventHandler
     public void on(MoneyDepositedEvent event) {
-        Account account = accountRepository.findById(event.getAccountId()).orElseThrow(() -> new RuntimeException("account not found"));
+        Account account = accountRepository.findById(event.getAccountId()).orElseThrow(() -> new AccountNotFoundException("Account not found"));
         logger.info("Event balance deposited: {}", event.getBalance());
         account.setBalance(account.getBalance().add(event.getAmount()));
         accountRepository.save(account);

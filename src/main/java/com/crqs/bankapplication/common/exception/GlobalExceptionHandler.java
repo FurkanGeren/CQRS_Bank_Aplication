@@ -36,4 +36,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public ResponseEntity<String> customerNotFoundException(CustomerNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CustomerAlreadyHaveAccountException.class)
+    public ResponseEntity<String> customerAlreadyHaveAccountException(CustomerAlreadyHaveAccountException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<String> accountNotFoundException(AccountNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
 }
+
+
+
+

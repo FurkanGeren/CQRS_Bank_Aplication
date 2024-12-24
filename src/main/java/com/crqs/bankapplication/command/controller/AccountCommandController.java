@@ -1,5 +1,6 @@
 package com.crqs.bankapplication.command.controller;
 
+import com.crqs.bankapplication.command.service.AccountValidationService;
 import com.crqs.bankapplication.command.service.TransferService;
 import com.crqs.bankapplication.common.commands.account.CreateAccountCommand;
 import com.crqs.bankapplication.common.commands.account.DepositMoneyCommand;
@@ -22,18 +23,22 @@ public class AccountCommandController {
 
     private final CommandGateway commandGateway;
     private final TransferService transferService;
+    private final AccountValidationService accountValidationService;
+
 
     private static final Logger logger = LoggerFactory.getLogger(AccountCommandController.class);
 
 
-    public AccountCommandController(CommandGateway commandGateway, TransferService transferService) {
+    public AccountCommandController(CommandGateway commandGateway, TransferService transferService, AccountValidationService accountValidationService) {
         this.commandGateway = commandGateway;
         this.transferService = transferService;
+        this.accountValidationService = accountValidationService;
     }
 
 
     @PostMapping
     public ResponseEntity<String> createAccount(@RequestBody CreateAccountRequest request) {
+        accountValidationService.validateAccount(request);
         String accountId = UUID.randomUUID().toString();
         BigDecimal bigDecimal = new BigDecimal("0.0");
         CreateAccountCommand command = new CreateAccountCommand(accountId, bigDecimal, request.customerId());
